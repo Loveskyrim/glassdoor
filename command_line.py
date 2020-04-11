@@ -32,12 +32,52 @@ def parsing():
     return parser.parse_args()
 
 
-def get_jobs(num_jobs, verbose):
+# def job_apply(name, surname, email, resume_path):
+#     try:
+#         name_elem = driver.find_element_by_xpath('.//input[@data-test="ApplicantName"]')
+#         name_elem.click()
+#         name_elem.send_keys(name+surname)
+#     except NoSuchElementException:
+#         pass
+#     try:
+#         email_elem = driver.find_element_by_xpath('.//input[@data-test="ApplicantEmail"]')
+#         email_elem.click()
+#         email_elem.send_keys(email)
+#     except NoSuchElementException:
+#         pass
+#     try:
+#         resume_elem = driver.find_element_by_xpath('.//input[contains(@type, "file", @name, "resume")]')
+#         resume_elem.sendFile(resume_path)
+#     except NoSuchElementException:
+#         pass
+#     try:
+#         name_elem = driver.find_element_by_xpath('.//input[@data-test="ApplicantName"]')
+#         name_elem.click()
+#         name_elem.send_keys(name+surname)
+#     except NoSuchElementException:
+#         pass
+#     try:
+#         name_elem = driver.find_element_by_xpath('.//input[@data-test="ApplicantName"]')
+#         name_elem.click()
+#         name_elem.send_keys(name+surname)
+#     except NoSuchElementException:
+#         pass
+#     try:
+#         name_elem = driver.find_element_by_xpath('.//input[@data-test="ApplicantName"]')
+#         name_elem.click()
+#         name_elem.send_keys(name+surname)
+#     except NoSuchElementException:
+#         pass
+
+
+
+def get_jobs(num_jobs, verbose, applying=False):
     
     '''Gathers jobs as a dataframe, scraped from Glassdoor'''
     
     #Initializing the webdriver
-    options = webdriver.ChromeOptions()
+    options = webdriver.ChromeOptions() 
+    # options.add_argument("--headless")
     
     #Uncomment the line below if you'd like to scrape without a new Chrome window every time.
     #options.add_argument('headless')
@@ -46,10 +86,11 @@ def get_jobs(num_jobs, verbose):
     driver = webdriver.Chrome(executable_path="/Users/andrejkonovalov/Documents/папка/python/hackaton/future_hack/Glassdoor/glassdoor/chromedriver_2", options=options)
     driver.set_window_size(1120, 1000)
 
-    url = 'https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=&sc.keyword=&locT=N&locId=142&jobType='
+    url = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=&locT=N&locId=142&locKeyword=Lithuania&jobType=parttime&fromAge=-1&minSalary=0&includeNoSalaryJobs=true&radius=25&cityId=-1&minRating=0.0&industryId=-1&sgocId=-1&seniorityType=all&companyId=-1&employerSizes=0&applicationType=0&remoteWorkType=0'
+    # url = 'https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=&sc.keyword=&locT=N&locId=142&jobType='
     driver.get(url)
     jobs = []
-
+    print(len(jobs))
     while len(jobs) < num_jobs:  #If true, should be still looking for new jobs.
 
         #Let the page load. Change this number based on your internet speed.
@@ -74,14 +115,34 @@ def get_jobs(num_jobs, verbose):
         job_buttons = driver.find_elements_by_class_name("jl")  #jl for Job Listing. These are the buttons we're going to click.
         for job_button in job_buttons:  
 
-            print("Progress: {}".format("" + str(len(jobs)) + "/" + str(num_jobs)))
+            print("Progress: {}".format("" + str(len(jobs)+1) + "/" + str(num_jobs)))
             if len(jobs) >= num_jobs:
                 break
+
+            try:
+            	link = job_button.find_element_by_xpath('.//a[@class="jobLink"]')
+            	attr = link.get_attribute("href")
+            except:
+            	pass
+            try:
+                date = job_button.find_element_by_xpath('.//span[@class="minor"]').text
+            except:
+                pass
 
             job_button.click()  #You might 
             time.sleep(1)
             collected_successfully = False
-            
+            # if applying:
+            # 	try:
+            #     	easy_apply = driver.find_element_by_xpath('.//button[contains(@data-easy-apply, "true")]')
+            #     	easy_apply.click()
+            #     	time.sleep(1)
+            #     	job_apply(...)
+            #     except:
+            #     	pass
+            #     raise
+
+
             while not collected_successfully:
                 try:
                     company_name = driver.find_element_by_xpath('.//div[@class="employerName"]').text
@@ -196,7 +257,9 @@ def get_jobs(num_jobs, verbose):
             "Industry" : industry,
             "Sector" : sector,
             "Revenue" : revenue,
-            "Competitors" : competitors})
+            "Competitors" : competitors,
+            "Date: ": date,
+            "URL": attr})
             #add job to jobs
 
         #Clicking on the "next page" button
@@ -214,6 +277,6 @@ if __name__ == "__main__":
 
     # print(json.dumps(vars(args), indent=4))
 
-    data = get_jobs(35, False)
+    data = get_jobs(3, False)
     with open('out.json', "w", encoding="utf8") as file_obj:
         json.dump(data, file_obj, ensure_ascii=False, indent=4)
