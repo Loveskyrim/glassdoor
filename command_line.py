@@ -86,7 +86,7 @@ def get_jobs(num_jobs, verbose, applying=False):
     driver = webdriver.Chrome(executable_path="/Users/andrejkonovalov/Documents/папка/python/hackaton/future_hack/Glassdoor/glassdoor/chromedriver_2", options=options)
     driver.set_window_size(1120, 1000)
 
-    url = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=&locT=N&locId=142&locKeyword=Lithuania&jobType=parttime&fromAge=-1&minSalary=0&includeNoSalaryJobs=true&radius=25&cityId=-1&minRating=0.0&industryId=-1&sgocId=-1&seniorityType=all&companyId=-1&employerSizes=0&applicationType=0&remoteWorkType=0'
+    url = 'https://www.glassdoor.com/Job/lithuania-jobs-SRCH_IL.0,9_IN142.htm'
     # url = 'https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=&sc.keyword=&locT=N&locId=142&jobType='
     driver.get(url)
     jobs = []
@@ -285,6 +285,6 @@ if __name__ == "__main__":
 
     # print(json.dumps(vars(args), indent=4))
 
-    data = get_jobs(0, False)
+    data = get_jobs(2, False)
     with open('out.json', "w", encoding="utf8") as file_obj:
         json.dump(data, file_obj, ensure_ascii=False, indent=4)
