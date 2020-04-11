@@ -1,3 +1,6 @@
+import argparse
+import os
+
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium import webdriver
 import time
