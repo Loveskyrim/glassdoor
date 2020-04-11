@@ -2,6 +2,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementClickInter
 from selenium import webdriver
 import time
 import json
+import math
 
 
 def parsing():
@@ -77,10 +78,9 @@ def get_jobs(num_jobs, verbose, applying=False):
     
     #Initializing the webdriver
     options = webdriver.ChromeOptions() 
-    # options.add_argument("--headless")
     
     #Uncomment the line below if you'd like to scrape without a new Chrome window every time.
-    #options.add_argument('headless')
+    #options.add_argument('--headless')
     
     #Change the path to where chromedriver is in your home folder.
     driver = webdriver.Chrome(executable_path="/Users/andrejkonovalov/Documents/папка/python/hackaton/future_hack/Glassdoor/glassdoor/chromedriver_2", options=options)
@@ -90,7 +90,9 @@ def get_jobs(num_jobs, verbose, applying=False):
     # url = 'https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&suggestChosen=false&clickSource=searchBtn&typedKeyword=&sc.keyword=&locT=N&locId=142&jobType='
     driver.get(url)
     jobs = []
-    print(len(jobs))
+
+    if num_jobs <= 0:
+    	num_jobs = math.inf
     while len(jobs) < num_jobs:  #If true, should be still looking for new jobs.
 
         #Let the page load. Change this number based on your internet speed.
@@ -114,16 +116,21 @@ def get_jobs(num_jobs, verbose, applying=False):
         #Going through each job in this page
         job_buttons = driver.find_elements_by_class_name("jl")  #jl for Job Listing. These are the buttons we're going to click.
         for job_button in job_buttons:  
+            if num_jobs == math.inf:
+                num_jobs_str = ''
+            else:
+                num_jobs_str = num_jobs
 
-            print("Progress: {}".format("" + str(len(jobs)+1) + "/" + str(num_jobs)))
+            print("Progress: {}".format("" + str(len(jobs)+1) + "/" + str(num_jobs_str)))
             if len(jobs) >= num_jobs:
                 break
 
             try:
-            	link = job_button.find_element_by_xpath('.//a[@class="jobLink"]')
-            	attr = link.get_attribute("href")
+                attr = job_button.find_element_by_xpath('.//a[@class="jobLink"]')
+                link = attr.get_attribute("href")
             except:
-            	pass
+                pass
+
             try:
                 date = job_button.find_element_by_xpath('.//span[@class="minor"]').text
             except:
@@ -259,14 +266,15 @@ def get_jobs(num_jobs, verbose, applying=False):
             "Revenue" : revenue,
             "Competitors" : competitors,
             "Date: ": date,
-            "URL": attr})
+            "URL": link})
             #add job to jobs
 
         #Clicking on the "next page" button
         try:
             driver.find_element_by_xpath('.//li[@class="next"]//a').click()
         except NoSuchElementException:
-            print("Scraping terminated before reaching target number of jobs. Needed {}, got {}.".format(num_jobs, len(jobs)))
+            if num_jobs != math.inf:
+                print("Scraping terminated before reaching target number of jobs. Needed {}, got {}.".format(num_jobs, len(jobs)))
             break
 
     return jobs
@@ -277,6 +285,6 @@ if __name__ == "__main__":
 
     # print(json.dumps(vars(args), indent=4))
 
-    data = get_jobs(3, False)
+    data = get_jobs(0, False)
     with open('out.json', "w", encoding="utf8") as file_obj:
         json.dump(data, file_obj, ensure_ascii=False, indent=4)
