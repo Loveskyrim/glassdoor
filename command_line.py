@@ -121,10 +121,10 @@ def get_jobs(num_jobs, verbose, applying=False):
             else:
                 num_jobs_str = num_jobs
 
-            print("Progress: {}".format("" + str(len(jobs)+1) + "/" + str(num_jobs_str)))
+            
             if len(jobs) >= num_jobs:
                 break
-
+            print("Progress: {}".format("" + str(len(jobs)+1) + "/" + str(num_jobs_str)))
             try:
                 attr = job_button.find_element_by_xpath('.//a[@class="jobLink"]')
                 link = attr.get_attribute("href")
